@@ -1,0 +1,37 @@
+{
+  "Version": 3,
+  "Meta": {
+    "Duration": 0.017,
+    "Fps": 60.0,
+    "Loop": true,
+    "AreBeziersRestricted": true,
+    "FadeInTime": 0.0,
+    "FadeOutTime": 0.0,
+    "CurveCount": 1,
+    "TotalSegmentCount": 2,
+    "TotalPointCount": 2,
+    "UserDataCount": 1,
+    "TotalUserDataSize": 0
+  },
+  "Curves": [
+    {
+      "Target": "Parameter",
+      "Id": "EyeTracking_ParamEyeBallX",
+      "FadeInTime": -1.0,
+      "FadeOutTime": -1.0,
+      "Segments": [
+        0,
+        1,
+        0,
+        0.017,
+        1
+      ]
+    }
+  ],
+  "UserData": [
+    {
+      "Time": 0.0,
+      "Value": ""
+    }
+  ]
+}
