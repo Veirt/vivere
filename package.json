@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-router": "^1.19.13",
+    "@tanstack/router-vite-plugin": "^1.19.6",
     "pixi-live2d-display": "^0.4.0",
     "pixi.js": "6",
     "react": "^18.2.0",
