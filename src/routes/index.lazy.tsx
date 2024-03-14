@@ -34,9 +34,11 @@ function Index() {
 
   return (
     <>
-      {characters.map((character) => {
-        return <img src={character.spritePath} alt="" />;
-      })}
+      <div className="flex flex-wrap gap-5 justify-center items-center my-5">
+        {characters.map((character) => {
+          return <img src={character.spritePath} alt="" />;
+        })}
+      </div>
     </>
   );
 }
