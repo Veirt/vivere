@@ -1,9 +1,12 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v3"
+	"encoding/json"
+	"io"
 	"log"
 	"os"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 type Character struct {
@@ -11,11 +14,31 @@ type Character struct {
 	SpriteSPath string `json:"spriteSPath"` // Small
 }
 
+type ModelDetail struct {
+	Version        int    `json:"Version"`
+	Name           string `json:"Name"`
+	FileReferences struct {
+		Moc      string   `json:"Moc"`
+		Textures []string `json:"Textures"`
+		Physics  string   `json:"Physics"`
+		Motions  map[string][]struct {
+			File string `json:"File"`
+		} `json:"Motions"`
+		// Expressions? not sure
+	} `json:"FileReferences"`
+	Groups []struct {
+		Target string   `json:"Target"`
+		Name   string   `json:"Name"`
+		Ids    []string `json:"Ids"`
+	} `json:"Groups"`
+}
+
 type CharacterDetail struct {
-	Id        string          `json:"id"`
-	Sprites   CharacterSprite `json:"sprites"`
-	Music     CharacterMusic  `json:"music"`
-	ModelPath string          `json:"modelPath"`
+	Id          string          `json:"id"`
+	Sprites     CharacterSprite `json:"sprites"`
+	Music       CharacterMusic  `json:"music"`
+	ModelPath   string          `json:"modelPath"`
+	ModelDetail ModelDetail     `json:"modelDetail"`
 }
 
 type CharacterSprite struct {
@@ -95,11 +118,24 @@ func main() {
 		characterId := c.Params("characterId")
 		for _, char := range cl.Characters {
 			if char.Id == characterId {
+				jsonFile, err := os.Open("./assets/Models/" + char.Id + "/model/model.model3.json")
+				if err != nil {
+					return c.Status(400).JSON(&Response{
+						Success: false,
+						Message: "Error when reading model",
+					})
+				}
+
+				var md ModelDetail
+				b, _ := io.ReadAll(jsonFile)
+				json.Unmarshal(b, &md)
+
 				return c.JSON(&CharacterDetail{
-					Id:        char.Id,
-					Sprites:   GetCharacterSprites(char.Id),
-					Music:     GetCharacterMusic(char.Id),
-					ModelPath: "/assets/Models/" + char.Id + "/model/model.model3.json",
+					Id:          char.Id,
+					Sprites:     GetCharacterSprites(char.Id),
+					Music:       GetCharacterMusic(char.Id),
+					ModelPath:   "/assets/Models/" + char.Id + "/model/model.model3.json",
+					ModelDetail: md,
 				})
 			}
 		}
