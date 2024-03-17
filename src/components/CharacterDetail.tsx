@@ -2,11 +2,10 @@ import {
   Cubism4InternalModel,
   InternalModel,
   Live2DModel,
-  MotionPreloadStrategy,
   MotionPriority,
 } from "pixi-live2d-display/cubism4";
 import * as PIXI from "pixi.js";
-import { useEffect, useRef, useState } from "react";
+import { WheelEvent, useEffect, useRef, useState } from "react";
 
 // @ts-ignore
 window.PIXI = PIXI;
@@ -65,6 +64,25 @@ export default function CharacterDetail({ id }: Props) {
     model.motion(motion, 0, MotionPriority.FORCE);
   }
 
+  function handleZoomModel(e: WheelEvent<HTMLCanvasElement>) {
+    if (!model) return;
+
+    let x = model.scale._x;
+    let y = model.scale._y;
+
+    if (e.deltaY < 0) {
+      x += 0.01;
+      y += 0.01;
+    } else {
+      console.log(x, y);
+      if (x <= 0.07 || y <= 0.05) return;
+      x -= 0.01;
+      y -= 0.01;
+    }
+
+    model.scale.set(x, y);
+  }
+
   useEffect(() => {
     async function fetchCharacterDetail(): Promise<CharacterDetail> {
       return new Promise(async (resolve, reject) => {
@@ -87,7 +105,6 @@ export default function CharacterDetail({ id }: Props) {
       });
 
       const m = await Live2DModel.from(modelPath, {
-        motionPreload: MotionPreloadStrategy.IDLE,
         idleMotionGroup: "Idle.anim",
         autoInteract: false,
       });
@@ -118,7 +135,10 @@ export default function CharacterDetail({ id }: Props) {
       <main className="flex">
         {charDetail?.id}
         <canvas
-          style={{ background: "url('/assets/Background_DungeonBattle.png')" }}
+          onWheelCapture={handleZoomModel}
+          style={{
+            background: "url('/api/assets/Background_DungeonBattle.png')",
+          }}
           className="rounded"
           ref={canvasRef}
           id="canvas"
