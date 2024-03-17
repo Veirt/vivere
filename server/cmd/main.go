@@ -50,10 +50,10 @@ type CharacterSprite struct {
 
 func GetCharacterSprites(charId string) CharacterSprite {
 	return CharacterSprite{
-		SpriteSPath: "/assets/Sprite/" + charId + "_00_s.png",
-		SpriteMPath: "/assets/Sprite/" + charId + "_00_m.png",
-		SpriteLPath: "/assets/Sprite/" + charId + "_00_l.png",
-		SpriteWPath: "/assets/Sprite/" + charId + "_00_w.png",
+		SpriteSPath: "/api/assets/Sprite/" + charId + "_00_s.png",
+		SpriteMPath: "/api/assets/Sprite/" + charId + "_00_m.png",
+		SpriteLPath: "/api/assets/Sprite/" + charId + "_00_l.png",
+		SpriteWPath: "/api/assets/Sprite/" + charId + "_00_w.png",
 	}
 }
 
@@ -66,10 +66,10 @@ type CharacterMusic struct {
 
 func GetCharacterMusic(charId string) CharacterMusic {
 	return CharacterMusic{
-		FullJPMusicPath:  "/assets/AudioClip/" + charId + "_SONG_JP.wav",
-		FullENMusicPath:  "/assets/AudioClip/" + charId + "_SONG_US.wav",
-		ShortJPMusicPath: "/assets/AudioClip/" + charId + "_SONG_SHORT_JP.wav",
-		ShortENMusicPath: "/assets/AudioClip/" + charId + "_SONG_SHORT_US.wav",
+		FullJPMusicPath:  "/api/assets/AudioClip/" + charId + "_SONG_JP.wav",
+		FullENMusicPath:  "/api/assets/AudioClip/" + charId + "_SONG_US.wav",
+		ShortJPMusicPath: "/api/assets/AudioClip/" + charId + "_SONG_SHORT_JP.wav",
+		ShortENMusicPath: "/api/assets/AudioClip/" + charId + "_SONG_SHORT_US.wav",
 	}
 }
 
@@ -106,7 +106,7 @@ func LoadCharacters() CharacterJSON {
 
 func main() {
 	app := fiber.New()
-	app.Static("/assets", "./assets")
+	app.Static("/api/assets", "./assets")
 
 	cl := LoadCharacters()
 
@@ -134,7 +134,7 @@ func main() {
 					Id:          char.Id,
 					Sprites:     GetCharacterSprites(char.Id),
 					Music:       GetCharacterMusic(char.Id),
-					ModelPath:   "/assets/Models/" + char.Id + "/model/model.model3.json",
+					ModelPath:   "/api/assets/Models/" + char.Id + "/model/model.model3.json",
 					ModelDetail: md,
 				})
 			}

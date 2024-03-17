@@ -84,7 +84,6 @@ export default function CharacterDetail({ id }: Props) {
       const app = new PIXI.Application({
         view: document.getElementById("canvas") as HTMLCanvasElement,
         backgroundAlpha: 0,
-        width: 500,
       });
 
       const m = await Live2DModel.from(modelPath, {
@@ -96,7 +95,7 @@ export default function CharacterDetail({ id }: Props) {
       // @ts-expect-error
       (m.internalModel as Cubism4InternalModel).breath = null;
 
-      m.scale.set(0.12, 0.12);
+      m.scale.set(0.14, 0.12);
       m.anchor.set(0.5, 0.5);
       m.position.set(
         canvasRef.current!.width / 2,
