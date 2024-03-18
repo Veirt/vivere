@@ -135,11 +135,7 @@ export default function CharacterDetail({ id }: Props) {
 	}, []);
 
 	return (
-		<div
-			style={{
-				background: "url('/api/assets/Background_DungeonBattle.png')",
-			}}
-		>
+		<>
 			<main className="mx-5 min-h-[95vh]">
 				<h1 className="my-5 text-xl font-bold">Live2D Model</h1>
 
@@ -183,6 +179,6 @@ export default function CharacterDetail({ id }: Props) {
 					charDetail?.music.fullJPMusicPath
 				}
 			></audio>
-		</div>
+		</>
 	);
 }
