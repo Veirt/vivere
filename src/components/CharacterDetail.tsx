@@ -120,7 +120,7 @@ export default function CharacterDetail({ id }: Props) {
       // @ts-expect-error: Somehow, breathing motion is slightly off, will try to find a fix later
       (m.internalModel as Cubism4InternalModel).breath = null;
 
-      m.scale.set(0.135, 0.12);
+      m.scale.set(0.1, 0.1);
       m.anchor.set(0.5, 0.5);
       m.position.set(
         canvasRef.current!.width / 2,
@@ -141,20 +141,19 @@ export default function CharacterDetail({ id }: Props) {
       <main className="mx-5 min-h-[95vh]">
         <h1 className="my-5 text-xl font-bold">Live2D Model</h1>
 
-        <div className="flex">
+        <div className="flex flex-col items-center sm:justify-start sm:items-start md:flex-row">
           <canvas
             onWheelCapture={handleZoomModel}
-            className={`rounded-md border-3 border-primary-200 ${
+            className={`w-[90%]  md:w-1/2 rounded-md border-3 border-primary-200 ${
               !model ? "invisible" : ""
             }`}
-            width={800}
             ref={canvasRef}
             id="canvas"
           ></canvas>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col w-[90%] md:w-1/2 ">
             <h1 className="mx-3 mb-5 text-xl font-bold">Character Name</h1>
-            <div className="flex flex-row flex-wrap gap-2 mx-3 w-1/2">
+            <div className="flex flex-row flex-wrap gap-2 mx-3">
               {charDetail &&
                 Object.keys(charDetail.modelDetail.FileReferences.Motions).map(
                   (key) => {
@@ -169,6 +168,18 @@ export default function CharacterDetail({ id }: Props) {
                     );
                   },
                 )}
+            </div>
+            <h1 className="my-5 mx-3 text-xl font-bold">Sprites</h1>
+            <div className="flex flex-wrap gap-5 mx-3">
+              {charDetail &&
+                Object.values(charDetail.sprites).map((sprite) => (
+                  <img
+                    className="object-contain p-2 w-36 bg-white border border-primary-200"
+                    key={sprite}
+                    src={sprite}
+                    alt=""
+                  />
+                ))}
             </div>
           </div>
         </div>
