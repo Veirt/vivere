@@ -87,6 +87,15 @@ export default function CharacterDetail({ id }: Props) {
     model.scale.set(x, y);
   }
 
+  // https://stackoverflow.com/questions/57358640/cancel-wheel-event-with-e-preventdefault-in-react-event-bubbling
+  const preventDefault = (e: Event) => e.preventDefault();
+  useEffect(() => {
+    canvasRef.current?.addEventListener("wheel", preventDefault);
+    return () => {
+      canvasRef.current?.removeEventListener("wheel", preventDefault);
+    };
+  }, []);
+
   useEffect(() => {
     async function fetchCharacterDetail(): Promise<CharacterDetail> {
       const res = await fetch(`/api/characters/${id}`);
