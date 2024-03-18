@@ -59,6 +59,12 @@ export default function CharacterDetail({ id }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<Live2DModel<InternalModel>>();
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+  audioRef.current?.play();
+  if (audioRef.current) {
+    audioRef.current.loop = true;
+  }
+
   function handleMotionClick(motion: string) {
     if (!model) return;
     model.motion(motion, 0, MotionPriority.FORCE);
@@ -74,7 +80,6 @@ export default function CharacterDetail({ id }: Props) {
       x += 0.01;
       y += 0.01;
     } else {
-      console.log(x, y);
       if (x <= 0.07 || y <= 0.05) return;
       x -= 0.01;
       y -= 0.01;
@@ -143,7 +148,6 @@ export default function CharacterDetail({ id }: Props) {
           ref={canvasRef}
           id="canvas"
         ></canvas>
-
         <div className="flex flex-col flex-wrap">
           {charDetail &&
             Object.keys(charDetail!.modelDetail.FileReferences.Motions).map(
@@ -156,6 +160,15 @@ export default function CharacterDetail({ id }: Props) {
               },
             )}
         </div>
+
+        <audio
+          ref={audioRef}
+          src={
+            charDetail?.music.shortJPMusicPath ||
+            charDetail?.music.fullJPMusicPath
+          }
+          preload={""}
+        ></audio>
       </main>
     </>
   );

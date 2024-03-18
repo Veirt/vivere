@@ -64,12 +64,25 @@ type CharacterMusic struct {
 	ShortENMusicPath string `json:"shortENMusicPath"`
 }
 
+func GetMusicPath(path string) string {
+	if _, err := os.Stat(path); err == nil {
+		return "/api/" + path
+	}
+
+	return ""
+}
+
 func GetCharacterMusic(charId string) CharacterMusic {
+	fullJpMusicPath := "assets/AudioClip/" + charId + "_SONG_JP.wav"
+	fullEnMusicPath := "assets/AudioClip/" + charId + "_SONG_US.wav"
+	shortJpMusicPath := "assets/AudioClip/" + charId + "_SONG_SHORT_JP.wav"
+	shortEnMusicPath := "assets/AudioClip/" + charId + "_SONG_SHORT_US.wav"
+
 	return CharacterMusic{
-		FullJPMusicPath:  "/api/assets/AudioClip/" + charId + "_SONG_JP.wav",
-		FullENMusicPath:  "/api/assets/AudioClip/" + charId + "_SONG_US.wav",
-		ShortJPMusicPath: "/api/assets/AudioClip/" + charId + "_SONG_SHORT_JP.wav",
-		ShortENMusicPath: "/api/assets/AudioClip/" + charId + "_SONG_SHORT_US.wav",
+		FullJPMusicPath:  GetMusicPath(fullJpMusicPath),
+		FullENMusicPath:  GetMusicPath(fullEnMusicPath),
+		ShortJPMusicPath: GetMusicPath(shortJpMusicPath),
+		ShortENMusicPath: GetMusicPath(shortEnMusicPath),
 	}
 }
 
