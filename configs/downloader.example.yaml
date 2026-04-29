@@ -1,0 +1,27 @@
+output_root: /mnt/storage3/vivere
+platform: Android
+interval: 1h
+once: true
+log_level: info
+
+http:
+  user_agent: vivere-downloader/0.1
+
+boi:
+  auth_base_url: https://prd1-auth.mememori-boi.com/api/
+  country_code: CN
+  request_timeout: 30s
+  download_timeout: 10m
+  max_retries: 10
+
+apk:
+  vars_url: https://mememori-game.com/apps/vars.js
+  request_timeout: 30s
+  download_timeout: 20m
+
+master:
+  enabled: true
+
+assets:
+  enabled: true
+  concurrency: 8
