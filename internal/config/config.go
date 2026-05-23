@@ -23,6 +23,7 @@ type Config struct {
 	APK        APKConfig     `yaml:"apk"`
 	Master     SyncConfig    `yaml:"master"`
 	Assets     AssetsConfig  `yaml:"assets"`
+	Export     ExportConfig  `yaml:"export"`
 }
 
 type HTTPConfig struct {
@@ -50,6 +51,16 @@ type SyncConfig struct {
 type AssetsConfig struct {
 	Enabled     bool `yaml:"enabled"`
 	Concurrency int  `yaml:"concurrency"`
+}
+
+type ExportConfig struct {
+	Enabled            bool     `yaml:"enabled"`
+	AssetStudioCLIPath string   `yaml:"assetstudio_cli_path"`
+	OutputDir          string   `yaml:"output_dir"`
+	AssetTypes         []string `yaml:"asset_types"`
+	BatchSize          int      `yaml:"batch_size"`
+	StagingDir         string   `yaml:"staging_dir"`
+	StateFile          string   `yaml:"state_file"`
 }
 
 type LogLevel string
@@ -91,6 +102,15 @@ func Load(path string) (Config, error) {
 		},
 		Master: SyncConfig{Enabled: true},
 		Assets: AssetsConfig{Enabled: true, Concurrency: 8},
+		Export: ExportConfig{
+			Enabled:            false,
+			AssetStudioCLIPath: "",
+			OutputDir:          "exports",
+			AssetTypes:         []string{"tex2d", "audio", "video", "textAsset", "sprite"},
+			BatchSize:          100,
+			StagingDir:         "tmp/export-staging",
+			StateFile:          "state/export-manifest.json",
+		},
 	}
 
 	data, err := os.ReadFile(path)
@@ -138,6 +158,26 @@ func (c Config) Validate() error {
 	}
 	if c.Assets.Concurrency < 1 {
 		errs = append(errs, errors.New("assets.concurrency must be >= 1"))
+	}
+	if c.Export.Enabled {
+		if strings.TrimSpace(c.Export.AssetStudioCLIPath) == "" {
+			errs = append(errs, errors.New("export.assetstudio_cli_path is required when export.enabled=true"))
+		}
+		if strings.TrimSpace(c.Export.OutputDir) == "" {
+			errs = append(errs, errors.New("export.output_dir is required when export.enabled=true"))
+		}
+		if len(c.Export.AssetTypes) == 0 {
+			errs = append(errs, errors.New("export.asset_types must not be empty when export.enabled=true"))
+		}
+		if c.Export.BatchSize < 1 {
+			errs = append(errs, errors.New("export.batch_size must be >= 1 when export.enabled=true"))
+		}
+		if strings.TrimSpace(c.Export.StagingDir) == "" {
+			errs = append(errs, errors.New("export.staging_dir is required when export.enabled=true"))
+		}
+		if strings.TrimSpace(c.Export.StateFile) == "" {
+			errs = append(errs, errors.New("export.state_file is required when export.enabled=true"))
+		}
 	}
 	if !c.Once && c.Interval <= 0 {
 		errs = append(errs, errors.New("interval must be > 0 when once=false"))

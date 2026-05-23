@@ -25,7 +25,7 @@ func TestExtractPlatformDirCopiesNestedFiles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("extractPlatformDir() error = %v", err)
 	}
-	copied, err := s.copyChangedFiles(staging, filepath.Join(root, "out"))
+	copied, changedFiles, err := s.copyChangedFiles(staging, filepath.Join(root, "out"))
 	if err != nil {
 		t.Fatalf("copyChangedFiles() error = %v", err)
 	}
@@ -39,6 +39,9 @@ func TestExtractPlatformDirCopiesNestedFiles(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "out", "ignored.bundle")); !os.IsNotExist(err) {
 		t.Fatalf("ignored platform file exists or stat failed unexpectedly: %v", err)
+	}
+	if len(changedFiles) != 2 {
+		t.Fatalf("len(changedFiles)=%d want 2", len(changedFiles))
 	}
 }
 

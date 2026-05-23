@@ -29,6 +29,7 @@ type Summary struct {
 	Version       string
 	APKDownloaded bool
 	FilesCopied   int
+	ChangedFiles  []string
 }
 
 func New(logger *slog.Logger, cfg config.Config, store state.Store) *Syncer {
@@ -79,7 +80,7 @@ func (s *Syncer) Sync(ctx context.Context, version string) (Summary, error) {
 	if err != nil {
 		return Summary{}, err
 	}
-	copied, err := s.copyChangedFiles(platformSource, extractDir)
+	copied, changedFiles, err := s.copyChangedFiles(platformSource, extractDir)
 	if err != nil {
 		return Summary{}, err
 	}
@@ -87,7 +88,7 @@ func (s *Syncer) Sync(ctx context.Context, version string) (Summary, error) {
 		return Summary{}, err
 	}
 	s.logger.Info("apk sync finished", "version", version, "files_copied", copied, "elapsed", time.Since(started))
-	return Summary{Version: version, APKDownloaded: downloaded, FilesCopied: copied}, nil
+	return Summary{Version: version, APKDownloaded: downloaded, FilesCopied: copied, ChangedFiles: changedFiles}, nil
 }
 
 func (s *Syncer) downloadFile(ctx context.Context, rawURL, dst string) error {
@@ -180,11 +181,12 @@ func extractZipFile(f *zip.File, target string) error {
 	return closeErr
 }
 
-func (s *Syncer) copyChangedFiles(srcDir, dstDir string) (int, error) {
+func (s *Syncer) copyChangedFiles(srcDir, dstDir string) (int, []string, error) {
 	if err := fsutil.EnsureDir(dstDir); err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	copied := 0
+	changedFiles := make([]string, 0)
 	err := filepath.WalkDir(srcDir, func(src string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -208,9 +210,10 @@ func (s *Syncer) copyChangedFiles(srcDir, dstDir string) (int, error) {
 			return err
 		}
 		copied++
+		changedFiles = append(changedFiles, dst)
 		return nil
 	})
-	return copied, err
+	return copied, changedFiles, err
 }
 
 func copyFileAtomic(src, dst string, perm os.FileMode) error {

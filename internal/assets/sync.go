@@ -31,10 +31,11 @@ type Syncer struct {
 }
 
 type Summary struct {
-	CatalogURL string
-	Candidates int
-	Downloaded int64
-	Skipped    int64
+	CatalogURL      string
+	Candidates      int
+	Downloaded      int64
+	Skipped         int64
+	DownloadedPaths []string
 }
 
 func New(logger *slog.Logger, getter Getter, outputRoot, platform string, concurrency int) *Syncer {
@@ -67,13 +68,15 @@ func (s *Syncer) Sync(ctx context.Context, info boi.DataURIInfo) (Summary, error
 	errCh := make(chan error, 1)
 	var downloaded int64
 	var skipped int64
+	downloadedPaths := make([]string, 0)
+	var downloadedPathsMu sync.Mutex
 	var wg sync.WaitGroup
 	for i := 0; i < s.concurrency; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for loc := range jobs {
-				if err := s.syncOne(ctx, info, loc, &downloaded, &skipped); err != nil {
+				if err := s.syncOne(ctx, info, loc, &downloaded, &skipped, &downloadedPathsMu, &downloadedPaths); err != nil {
 					select {
 					case errCh <- err:
 					default:
@@ -108,10 +111,10 @@ sendLoop:
 		return Summary{}, err
 	}
 	s.logger.Info("asset sync finished", "catalog_url", catalogURL, "candidates", candidateCount, "downloaded", downloaded, "skipped", skipped, "elapsed", time.Since(started))
-	return Summary{CatalogURL: catalogURL, Candidates: candidateCount, Downloaded: downloaded, Skipped: skipped}, nil
+	return Summary{CatalogURL: catalogURL, Candidates: candidateCount, Downloaded: downloaded, Skipped: skipped, DownloadedPaths: downloadedPaths}, nil
 }
 
-func (s *Syncer) syncOne(ctx context.Context, info boi.DataURIInfo, loc addressables.ResourceLocation, downloaded, skipped *int64) error {
+func (s *Syncer) syncOne(ctx context.Context, info boi.DataURIInfo, loc addressables.ResourceLocation, downloaded, skipped *int64, downloadedPathsMu *sync.Mutex, downloadedPaths *[]string) error {
 	bundleID := loc.PrimaryKey
 	localPath, err := safeBundlePath(s.root, bundleID)
 	if err != nil {
@@ -138,6 +141,9 @@ func (s *Syncer) syncOne(ctx context.Context, info boi.DataURIInfo, loc addressa
 	if err := fsutil.WriteFileAtomic(localPath, data, 0o644); err != nil {
 		return err
 	}
+	downloadedPathsMu.Lock()
+	*downloadedPaths = append(*downloadedPaths, localPath)
+	downloadedPathsMu.Unlock()
 	atomic.AddInt64(downloaded, 1)
 	return nil
 }

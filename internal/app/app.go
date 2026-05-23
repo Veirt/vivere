@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"time"
 
 	"github.com/veirt/vivere/internal/apk"
 	"github.com/veirt/vivere/internal/assets"
 	"github.com/veirt/vivere/internal/boi"
 	"github.com/veirt/vivere/internal/config"
+	"github.com/veirt/vivere/internal/exporter"
 	"github.com/veirt/vivere/internal/fsutil"
 	"github.com/veirt/vivere/internal/master"
 	"github.com/veirt/vivere/internal/state"
@@ -24,6 +26,7 @@ func Run(ctx context.Context, logger *slog.Logger, cfg config.Config) error {
 	apkSyncer := apk.New(logger.With("component", "apk"), cfg, store)
 	masterSyncer := master.New(logger.With("component", "master"), client, cfg.OutputRoot)
 	assetSyncer := assets.New(logger.With("component", "assets"), client, cfg.OutputRoot, cfg.Platform, cfg.Assets.Concurrency)
+	exporterRunner := exporter.New(logger.With("component", "export"), cfg)
 
 	runOnce := func() error {
 		cycleStarted := time.Now()
@@ -55,12 +58,24 @@ func Run(ctx context.Context, logger *slog.Logger, cfg config.Config) error {
 			logger.Info("master sync completed", "entries", masterSummary.CatalogEntries, "downloaded", masterSummary.Downloaded, "skipped", masterSummary.Skipped)
 		}
 
+		var assetSummary assets.Summary
 		if cfg.Assets.Enabled {
-			assetSummary, err := assetSyncer.Sync(ctx, info)
+			assetSummary, err = assetSyncer.Sync(ctx, info)
 			if err != nil {
 				return fmt.Errorf("asset sync: %w", err)
 			}
 			logger.Info("asset sync completed", "catalog_url", assetSummary.CatalogURL, "candidates", assetSummary.Candidates, "downloaded", assetSummary.Downloaded, "skipped", assetSummary.Skipped)
+		}
+		if cfg.Export.Enabled {
+			groups := []exporter.InputGroup{
+				{Name: "boi-bundles", BaseDir: filepath.Join(cfg.OutputRoot, "boi-bundles"), Files: assetSummary.DownloadedPaths, BatchSize: cfg.Export.BatchSize},
+				{Name: "apk-assets", BaseDir: filepath.Join(cfg.OutputRoot, "apk-extract", "assets", "aa", cfg.Platform), Files: apkSummary.ChangedFiles, BatchSize: cfg.Export.BatchSize},
+			}
+			exportSummary, err := exporterRunner.Run(ctx, groups)
+			if err != nil {
+				return fmt.Errorf("export assets: %w", err)
+			}
+			logger.Info("asset export completed", "output_dir", exportSummary.OutputDir, "groups", exportSummary.Groups, "batches", exportSummary.Batches, "files_before", exportSummary.FilesBefore, "files_after_cleanup", exportSummary.FilesAfterCleanup, "deleted_duplicates", exportSummary.DeletedDuplicates, "elapsed", exportSummary.Elapsed)
 		}
 		logger.Info("sync cycle finished", "elapsed", time.Since(cycleStarted))
 		return nil
