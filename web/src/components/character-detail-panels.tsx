@@ -142,10 +142,9 @@ export function CharacterArtworkCard({ character }: { character: Character }) {
                     key={detailImage}
                     character={character}
                     src={detailImage}
-                    className="block aspect-[4/3] w-full rounded-[0.65rem] bg-secondary object-cover object-top"
+                    className="block w-full rounded-[0.65rem] bg-secondary object-cover object-top"
                 />
             </div>
-            <div className="archive-divider" aria-hidden="true" />
         </Card>
     )
 }
