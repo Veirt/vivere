@@ -1,11 +1,13 @@
 dev-server:
-    wgo -cd server -file=.go go run cmd/main.go
+    wgo -cd server -file=.go go run ./cmd
+
 dev-web:
-    bun run dev
+    vp dev
 
 build: build-web
+
 build-web:
-    bun run build
+    vp build
 
-
-
+check:
+    bun run check
